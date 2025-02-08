@@ -88,7 +88,7 @@ Example:
 
 ## 效果图
 
-![image-20250208130256764](./img/test.png)
+![image-20250208130256764](http://img.zacarx.top/img/test.png)
 
 ## 联系
 
