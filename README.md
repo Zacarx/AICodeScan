@@ -86,19 +86,17 @@ Example:
 
 ## 效果图
 
-![image-20250208130256764](http://img.zacarx.top/img/image-20250208130256764.png)
+![image-20250208130256764](./img/test.png)
 
 ## 联系
 
 如果你想反馈体验，有更好的建议，或者想参与项目开发
 
-可以添加我的微信
+可以添加我的微信（图一）
 
-<img src="http://img.zacarx.top/img/image-20250208131538819.png" alt="image-20250208131538819" style="zoom:25%;" />
+如果你想关注项目更新可以关注微信公众号（图二）
 
-如果你想关注项目更新可以关注微信公众号
-
-<img src="http://img.zacarx.top/img/image-20250208131442284.png" alt="image-20250208131442284" style="zoom:50%;" />
+<img src="http://img.zacarx.top/img/image-20250208131538819.png" alt="image-20250208131538819" style="zoom:25%;" /><img src="http://img.zacarx.top/img/image-20250208131442284.png" alt="image-20250208131442284" style="zoom:50%;" />
 
 
 
