@@ -1,0 +1,2 @@
+# AICodeScan
+一款基于Zjackky/CodeScan的轻量级匹配Sink点并AI审计的代码审计扫描器
