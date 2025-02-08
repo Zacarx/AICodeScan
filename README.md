@@ -94,7 +94,7 @@ Example:
 
 可以添加我的微信
 
-<img src="http://img.zacarx.top/img/image-20250208131538819.png" alt="image-20250208131538819" style="zoom:25%;" />
+<img src="http://img.zacarx.top/img/image-20250208131538819.png" alt="image-20250208131538819" style="zoom:10%;" />
 
 如果你想关注项目更新可以关注微信公众号
 
