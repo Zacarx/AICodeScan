@@ -8,27 +8,54 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/cheggaaa/pb/v3"
 )
 
-// FindFile FindFile函数用于在指定目录下查找符合规则的.java文件，并将包含规则的行写入到输出文件中
-// 参数dir表示要搜索的目录路径
-// 参数outputfile表示输出结果文件的路径（工具运行的目录）
-// 参数rules表示要匹配的规则列表
+// FindFileByJava 函数用于在指定目录下查找符合规则的 .java 文件，并将包含规则的行写入到输出文件中
+// 参数 dir 表示要搜索的目录路径
+// 参数 outputfile 表示输出结果文件的路径（工具运行的目录）
+// 参数 rules 表示要匹配的规则列表
 func FindFileByJava(dir string, outputfile string, rules []string) {
 	var fileList []string
 
-	// 使用filepath.Walk遍历目标目录，跳过黑名单中的目录，收集所有.java文件的路径
+	// 统计符合条件的文件数量
+	fileCount := 0
 	err := filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-		//如果f是一个文件夹
 		if f.IsDir() {
-			//继续进行遍历，如果在黑名单中的话就进行跳过
 			if Rule2.MatchRule(path, Rule2.PathBlackJava) {
 				return filepath.SkipDir
 			}
-			//如果文件存在的话就进行遍历 否则就进行判断，如果是java或者jsp后缀就添加到文件列表
+		} else if strings.HasSuffix(f.Name(), ".java") || strings.HasSuffix(f.Name(), ".jsp") {
+			fileCount++
+		}
+		return nil
+	})
+
+	if err != nil {
+		fmt.Printf("error walking the path %v: %v\n", dir, err)
+		return
+	}
+
+	if fileCount == 0 {
+		fmt.Println("No .java or .jsp files found.")
+		return
+	}
+
+	// 创建进度条
+	bar := pb.StartNew(fileCount)
+
+	err = filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if f.IsDir() {
+			if Rule2.MatchRule(path, Rule2.PathBlackJava) {
+				return filepath.SkipDir
+			}
 		} else if strings.HasSuffix(f.Name(), ".java") || strings.HasSuffix(f.Name(), ".jsp") {
 			fileList = append(fileList, path)
 		}
@@ -40,26 +67,28 @@ func FindFileByJava(dir string, outputfile string, rules []string) {
 		return
 	}
 
-	// 检查遍历目录过程中的错误
-	Check(err)
-
-	// 创建或打开输出文件，以追加模式写入
 	basedir := "./results/"
-
 	err1 := os.MkdirAll(basedir, os.ModePerm)
 	if err1 != nil {
-		fmt.Println("Error creating directory:", err)
+		fmt.Println("Error creating directory:", err1)
 		return
 	}
 	outputfile = basedir + outputfile
 	outputFile, err := os.OpenFile(outputfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	Check(err)
-	defer outputFile.Close() // 确保文件在函数返回前被关闭
+	if err != nil {
+		fmt.Println("Error opening output file:", err)
+		return
+	}
+	defer outputFile.Close()
+
 	for _, file := range fileList {
 		f, err := os.Open(file)
-		Check(err)
+		if err != nil {
+			fmt.Println("Error opening file:", err)
+			bar.Increment()
+			continue
+		}
 
-		// 使用defer关闭文件前，将其放入函数或代码块作用域中，以便及时释放资源
 		func() {
 			defer f.Close()
 
@@ -69,11 +98,11 @@ func FindFileByJava(dir string, outputfile string, rules []string) {
 
 			lineNumber := 1
 			var lastFile string
-			fileProcessed := false // 标记当前文件是否已被处理
+			fileProcessed := false
 
 			for scanner.Scan() {
 				if fileProcessed {
-					break // 如果文件已经调用过AI分析，跳出循环
+					break
 				}
 
 				line := strings.TrimSpace(scanner.Text())
@@ -93,14 +122,13 @@ func FindFileByJava(dir string, outputfile string, rules []string) {
 								fmt.Println("Error in AI analysis:", err)
 								continue
 							}
-							fmt.Print(result)
-							//_, err = outputFile.WriteString(fmt.Sprintf("AI Analysis Result: %s\n\n", result))
 							_, err = outputFile.WriteString(fmt.Sprintf("file [%s]\n%d : %s\n\n AI Analysis Result:\n%s\n\n", file, lineNumber, line, result))
 							if err != nil {
 								fmt.Println("Error writing to file:", err)
 							}
 						}
 						lastFile = file
+						fileProcessed = true
 					}
 				}
 				lineNumber++
@@ -110,5 +138,9 @@ func FindFileByJava(dir string, outputfile string, rules []string) {
 				fmt.Fprintln(os.Stderr, "reading standard input:", err)
 			}
 		}()
+
+		bar.Increment()
 	}
+
+	bar.Finish()
 }

@@ -41,6 +41,7 @@ func parseFlag() {
 	uploadRule := flag.String("u", "", "文件上传规则")
 	rceRule := flag.String("r", "", "RCE规则")
 	filterfile := flag.String("m", "", "过滤的字符串")
+	//flag.String("o", "./results/results.html", "Output HTML file path")
 	//outdir := flag.String("o", "", "输出结果")
 	flag.Parse()
 

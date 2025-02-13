@@ -21,7 +21,7 @@ func Log4j(dir string) {
 			if !log4j2 && strings.Contains(filename, "log4j") {
 
 				log4j2 = true
-
+				fmt.Println("Log4j2分析开始")
 				// 执行 FindFile.FindFileByJava 方法
 				FindFile.FindFileByJava(dir, "log4j.txt", []string{"logger.info(", "log.info("})
 				fmt.Println("Log4j2分析完成")

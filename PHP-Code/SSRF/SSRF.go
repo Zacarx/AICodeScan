@@ -6,8 +6,9 @@ import (
 )
 
 func PHP_SSRF(dir string) {
+	fmt.Println("SSRF分析开始")
 	FindFile.FindFileByPHP(dir, "SSRF.txt", []string{
 		"curl_exec(",
 	})
-	fmt.Println("PHPSSRF分析完成")
+	fmt.Println("SSRF分析完成")
 }

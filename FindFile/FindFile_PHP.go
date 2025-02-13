@@ -8,26 +8,26 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/cheggaaa/pb/v3"
 )
 
 func FindFileByPHP(dir string, outputfile string, rules []string) {
 	var fileList []string
 
-	// 使用filepath.Walk遍历目标目录，跳过黑名单中的目录，收集所有.php文件的路径
+	// 统计符合条件的文件数量
+	fileCount := 0
 	err := filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-		//如果f是一个文件夹
 		if f.IsDir() {
-			//继续进行遍历，如果在黑名单中的话就进行跳过
 			if Rule2.MatchRule(path, Rule2.PathBlackPhp) {
 				return filepath.SkipDir
 			}
 		} else if strings.HasSuffix(f.Name(), ".php") || strings.HasSuffix(f.Name(), ".mds") {
-			fileList = append(fileList, path)
+			fileCount++
 		}
-
 		return nil
 	})
 
@@ -36,7 +36,32 @@ func FindFileByPHP(dir string, outputfile string, rules []string) {
 		return
 	}
 
-	Check(err)
+	if fileCount == 0 {
+		fmt.Println("No .php files found.")
+		return
+	}
+
+	// 创建进度条
+	bar := pb.StartNew(fileCount)
+
+	err = filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if f.IsDir() {
+			if Rule2.MatchRule(path, Rule2.PathBlackPhp) {
+				return filepath.SkipDir
+			}
+		} else if strings.HasSuffix(f.Name(), ".php") || strings.HasSuffix(f.Name(), ".mds") {
+			fileList = append(fileList, path)
+		}
+		return nil
+	})
+
+	if err != nil {
+		fmt.Printf("error walking the path %v: %v\n", dir, err)
+		return
+	}
 
 	basedir := "./results/"
 	err1 := os.MkdirAll(basedir, os.ModePerm)
@@ -46,14 +71,20 @@ func FindFileByPHP(dir string, outputfile string, rules []string) {
 	}
 	outputfile = basedir + outputfile
 	outputFile, err := os.OpenFile(outputfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	Check(err)
+	if err != nil {
+		fmt.Println("Error opening output file:", err)
+		return
+	}
 	defer outputFile.Close()
 
 	for _, file := range fileList {
 		f, err := os.Open(file)
-		Check(err)
+		if err != nil {
+			fmt.Println("Error opening file:", err)
+			bar.Increment()
+			continue
+		}
 
-		// 使用defer关闭文件前，将其放入函数或代码块作用域中，以便及时释放资源
 		func() {
 			defer f.Close()
 
@@ -87,14 +118,13 @@ func FindFileByPHP(dir string, outputfile string, rules []string) {
 								fmt.Println("Error in AI analysis:", err)
 								continue
 							}
-							//fmt.Print(result)
-							//_, err = outputFile.WriteString(fmt.Sprintf("AI Analysis Result: %s\n\n", result))
 							_, err = outputFile.WriteString(fmt.Sprintf("file [%s]\n%d : %s\n\n AI Analysis Result:\n%s\n\n", file, lineNumber, line, result))
 							if err != nil {
 								fmt.Println("Error writing to file:", err)
 							}
 						}
 						lastFile = file
+						fileProcessed = true
 					}
 				}
 				lineNumber++
@@ -104,5 +134,9 @@ func FindFileByPHP(dir string, outputfile string, rules []string) {
 				fmt.Fprintln(os.Stderr, "reading standard input:", err)
 			}
 		}()
+
+		bar.Increment()
 	}
+
+	bar.Finish()
 }

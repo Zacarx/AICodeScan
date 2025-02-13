@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-// 函数用于检查是否存在java代码内容，并将相关信息写入 sql.txt
+// 函数用于检查是否存在php代码内容，并将相关信息写入 sql.txt
 func findSqlByCode(dir string) {
 	selectList := []string{}
 	var lastFile string // 记录上一次输出的文件，用于控制输出格式

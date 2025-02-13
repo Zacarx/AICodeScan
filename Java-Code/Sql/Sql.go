@@ -14,6 +14,7 @@ func check(e error) {
 
 // Sqlcheck 函数是我们的主函数，负责执行 SQL 检查的逻辑
 func Sqlcheck(dir string) {
+	fmt.Println("sql分析开始")
 	// 检查是否存在 @Select 注解
 	findSqlByCode(dir)
 

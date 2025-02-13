@@ -6,6 +6,7 @@ import (
 )
 
 func Include(dir string) {
+	fmt.Println("PHP文件包含分析开始")
 	FindFile.FindFileByPHP(dir, "Include.txt", []string{
 		"include(",
 	})
